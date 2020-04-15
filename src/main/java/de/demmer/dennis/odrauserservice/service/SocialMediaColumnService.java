@@ -5,11 +5,9 @@ import de.demmer.dennis.odrauserservice.model.User;
 import de.demmer.dennis.odrauserservice.repository.ColumnRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-@Transactional
 @Service
-public class NewsColumnService {
+public class SocialMediaColumnService {
 
     @Autowired
     private ColumnRepository columnRepository;
@@ -17,34 +15,25 @@ public class NewsColumnService {
     @Autowired
     private UserService userService;
 
-    public NewsColumn getColumnByID(Long id){
-        return columnRepository.findById(id).orElse(null);
-
+    private String normalize(String input){
+        String output = input.replaceAll(" ","").replaceAll("#","");
+        return output;
     }
 
     public void addColumnToUser(Long userId, String source, String type, String query) {
-
         User user = userService.getUserById(userId);
         NewsColumn column = new NewsColumn();
         column.setSource(source);
         column.setType(type);
         column.setUser(user);
+        query = normalize(query);
         if (query != null) {
             column.setQuery(query);
         }
         columnRepository.save(column);
-
         user.getNewsColumnList().add(column);
         userService.save(user);
 
-
     }
 
-    public void removeColumn(Long columnID, Long userId) {
-        User user = userService.getUserById(userId);
-        NewsColumn column = getColumnByID(columnID);
-        user.getNewsColumnList().remove(column);
-        userService.save(user);
-        columnRepository.deleteByIdAndUser(columnID, userService.getUserById(userId));
-    }
 }

@@ -20,7 +20,6 @@ public class UserController {
     UserService userService;
 
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/user/all")
     public List<User> getAllUsers(@CurrentUser UserPrincipal currentUser) {
         return userService.getAllUsers();
@@ -35,6 +34,19 @@ public class UserController {
         }
         userService.deleteUser(id);
         return new ApiResponse(true, "User with ID: " + id + " is deleted");
+    }
+
+
+    @GetMapping("/user/current")
+    public UserPrincipal getCurrentUser(@CurrentUser UserPrincipal currentUser){
+        return currentUser;
+    }
+
+
+    @GetMapping("/user/{id}")
+    public User getUserById(@CurrentUser UserPrincipal currentUser, @PathVariable long id){
+
+        return userService.getUserById(id);
     }
 
 

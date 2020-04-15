@@ -2,10 +2,10 @@ package de.demmer.dennis.odrauserservice.controller;
 
 import de.demmer.dennis.odrauserservice.model.NewsColumn;
 import de.demmer.dennis.odrauserservice.payload.ApiResponse;
-import de.demmer.dennis.odrauserservice.repository.NewsColumnRepository;
 import de.demmer.dennis.odrauserservice.security.CurrentUser;
 import de.demmer.dennis.odrauserservice.security.UserPrincipal;
 import de.demmer.dennis.odrauserservice.service.NewsColumnService;
+import de.demmer.dennis.odrauserservice.service.SocialMediaColumnService;
 import de.demmer.dennis.odrauserservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,6 +25,9 @@ public class UserColumnsController {
     UserService userService;
 
     @Autowired
+    SocialMediaColumnService socialMediaColumnService;
+
+    @Autowired
     NewsColumnService newsColumnService;
 
     @GetMapping("/get/columns")
@@ -32,10 +35,30 @@ public class UserColumnsController {
         return userService.getColumnsByUserId(currentUser.getId());
     }
 
-
     @GetMapping("/add/column")
     public ApiResponse addColumn(@CurrentUser UserPrincipal currentUser, @RequestParam String source, @RequestParam String type, @RequestParam(required = false) String query) {
-        newsColumnService.addNewsColumnToUser(currentUser.getId(), source, type, query);
+        switch (type){
+            case "socialmedia":
+                socialMediaColumnService.addColumnToUser(currentUser.getId(), source, type, query);
+                return new ApiResponse(true, "Column was added");
+            case "query":
+                newsColumnService.addColumnToUser(currentUser.getId(), source, type, query);
+                return new ApiResponse(true, "Column was added");
+            case "source":
+                newsColumnService.addColumnToUser(currentUser.getId(), source, type, query);
+                return new ApiResponse(true, "Column was added");
+            case "star":
+                newsColumnService.addColumnToUser(currentUser.getId(), source, type, query);
+                return new ApiResponse(true, "Column was added");
+            case "topic":
+                newsColumnService.addColumnToUser(currentUser.getId(), source, type, query);
+                return new ApiResponse(true, "Column was added");
+            case "flag":
+                newsColumnService.addColumnToUser(currentUser.getId(), source, type, query);
+                return new ApiResponse(true, "Column was added");
+
+        }
+
         return new ApiResponse(true, "Column was added");
     }
 

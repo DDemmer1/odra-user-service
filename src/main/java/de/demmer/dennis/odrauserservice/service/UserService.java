@@ -2,8 +2,9 @@ package de.demmer.dennis.odrauserservice.service;
 
 import de.demmer.dennis.odrauserservice.model.NewsColumn;
 import de.demmer.dennis.odrauserservice.model.User;
-import de.demmer.dennis.odrauserservice.repository.NewsColumnRepository;
+import de.demmer.dennis.odrauserservice.repository.ColumnRepository;
 import de.demmer.dennis.odrauserservice.repository.UserRepository;
+import de.demmer.dennis.odrauserservice.security.UserPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,10 +19,6 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private NewsColumnRepository newsColumnRepository;
-
 
 
     public List<NewsColumn> getColumnsByUserId(long id){
@@ -48,5 +45,9 @@ public class UserService {
 
     public void deleteUser(long id) {
         userRepository.deleteById(id);
+    }
+
+    public User getUserByUserName(String userName) {
+        return userRepository.findByUsername(userName).get();
     }
 }
