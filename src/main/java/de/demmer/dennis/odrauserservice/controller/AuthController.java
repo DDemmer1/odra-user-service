@@ -4,10 +4,7 @@ import de.demmer.dennis.odrauserservice.exception.AppException;
 import de.demmer.dennis.odrauserservice.model.Role;
 import de.demmer.dennis.odrauserservice.model.RoleName;
 import de.demmer.dennis.odrauserservice.model.User;
-import de.demmer.dennis.odrauserservice.payload.ApiResponse;
-import de.demmer.dennis.odrauserservice.payload.JwtAuthenticationResponse;
-import de.demmer.dennis.odrauserservice.payload.LoginRequest;
-import de.demmer.dennis.odrauserservice.payload.SignUpRequest;
+import de.demmer.dennis.odrauserservice.payload.*;
 import de.demmer.dennis.odrauserservice.repository.RoleRepository;
 import de.demmer.dennis.odrauserservice.repository.UserRepository;
 import de.demmer.dennis.odrauserservice.security.CurrentUser;
@@ -34,19 +31,19 @@ import java.util.Collections;
 public class AuthController {
 
     @Autowired
-    AuthenticationManager authenticationManager;
+    private AuthenticationManager authenticationManager;
 
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    RoleRepository roleRepository;
+    private RoleRepository roleRepository;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
-    JwtTokenProvider tokenProvider;
+    private JwtTokenProvider tokenProvider;
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -66,16 +63,15 @@ public class AuthController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
-        if(userRepository.existsByUsername(signUpRequest.getUsername())) {
+        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
             return new ResponseEntity(new ApiResponse(false, "Username is already taken!"),
                     HttpStatus.BAD_REQUEST);
         }
 
-        if(userRepository.existsByEmail(signUpRequest.getEmail())) {
+        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
             return new ResponseEntity(new ApiResponse(false, "Email Address already in use!"),
                     HttpStatus.BAD_REQUEST);
         }
-
         // Creating user's account
         User user = new User(signUpRequest.getName(), signUpRequest.getUsername(),
                 signUpRequest.getEmail(), signUpRequest.getPassword());
@@ -96,10 +92,28 @@ public class AuthController {
         return ResponseEntity.created(location).body(new ApiResponse(true, "User registered successfully"));
     }
 
+    @PreAuthorize("hasRole('USER')")
+    @PostMapping("/changePassword")
+    public ApiResponse changePW(@Valid @RequestBody ChangePasswordRequest changePasswordRequest, @CurrentUser UserPrincipal currentUser) {
+
+        User user = userRepository.findById(currentUser.getId()).orElseThrow(() -> new AppException("User not found"));
+        if(changePasswordRequest.getOldPassword().equals(changePasswordRequest.getNewPassword())){
+            return  new ApiResponse(false,"Passwords are equal. Please choose a different password.");
+        }
+
+        if (changePasswordRequest.getOldPassword().equals(user.getPassword())){
+            user.setPassword(changePasswordRequest.getNewPassword());
+            userRepository.save(user);
+            return new ApiResponse(true, "Password successfully changed");
+        }
+
+        return new ApiResponse(false, "Old password is wrong");
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/isAdmin")
-    public ApiResponse isAdmin(@CurrentUser UserPrincipal currentUser){
-        return new ApiResponse(true,"Logged in as admin");
+    public ApiResponse isAdmin(@CurrentUser UserPrincipal currentUser) {
+        return new ApiResponse(true, "Logged in as admin");
     }
 
 
