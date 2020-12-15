@@ -7,15 +7,14 @@ import de.demmer.dennis.odrauserservice.payload.TagRequest;
 import de.demmer.dennis.odrauserservice.security.CurrentUser;
 import de.demmer.dennis.odrauserservice.security.UserPrincipal;
 import de.demmer.dennis.odrauserservice.service.MetadataService;
+import de.demmer.dennis.odrauserservice.service.SseService;
 import de.demmer.dennis.odrauserservice.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Set;
 
 @Log4j2
@@ -29,12 +28,16 @@ public class TaggingController {
     @Autowired
     UserService userService;
 
+    @Autowired
+    SseService sseService;
+
     @PostMapping("/star")
     public ApiResponse addStar(@CurrentUser UserPrincipal currentUser, @Valid @RequestBody TagRequest tagRequest) {
         try {
             log.info("Star request @media: " + tagRequest.getMediaId() + ", user: " + currentUser.getName());
             boolean starAdded = metadataService.addStar(new Star(currentUser.getId(), new Date(), tagRequest.getMediaId()), tagRequest.getMediaId());
             String msg = starAdded ? "star was added" : "star was removed";
+            sseService.emmitMetadataUpdate(tagRequest.getMediaId());
             return new ApiResponse(true, "Star request at media: " + tagRequest.getMediaId() + ", " + msg );
         } catch (Exception e) {
             e.printStackTrace();
@@ -49,6 +52,7 @@ public class TaggingController {
             log.info("Flag request @media: " + tagRequest.getMediaId() + ", user: " + currentUser.getName());
             boolean flagAdded = metadataService.addFlag(new Flag(currentUser.getId(), new Date(), tagRequest.getMediaId()), tagRequest.getMediaId());
             String msg = flagAdded ? "flag was added" : "flag was removed";
+            sseService.emmitMetadataUpdate(tagRequest.getMediaId());
             return new ApiResponse(true, "Flag request at media: " + tagRequest.getMediaId() + ", " + msg );
         } catch (Exception e) {
             e.printStackTrace();

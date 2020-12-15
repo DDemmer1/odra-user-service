@@ -3,12 +3,12 @@ package de.demmer.dennis.odrauserservice.controller.metadata;
 import de.demmer.dennis.odrauserservice.model.meta.Metadata;
 import de.demmer.dennis.odrauserservice.model.meta.Topic;
 import de.demmer.dennis.odrauserservice.payload.ApiResponse;
-import de.demmer.dennis.odrauserservice.payload.TagRequest;
 import de.demmer.dennis.odrauserservice.payload.TopicDeleteRequest;
 import de.demmer.dennis.odrauserservice.payload.TopicRequest;
 import de.demmer.dennis.odrauserservice.security.CurrentUser;
 import de.demmer.dennis.odrauserservice.security.UserPrincipal;
 import de.demmer.dennis.odrauserservice.service.MetadataService;
+import de.demmer.dennis.odrauserservice.service.SseService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -22,11 +22,13 @@ import java.util.Set;
 @Log4j2
 @RestController
 @RequestMapping("/meta")
-public class MetadataController {
+public class TopicController {
 
     @Autowired
     MetadataService metadataService;
 
+    @Autowired
+    SseService sseService;
 
     @GetMapping("/{mediaId}")
     public Metadata getMetadataFromMediaId(@CurrentUser UserPrincipal currentUser, @PathVariable long mediaId) {
@@ -48,6 +50,7 @@ public class MetadataController {
             boolean topicAdded = metadataService.addTopic(topic,topicRequest.getMediaId());
 
             String msg = topicAdded ? "topic was added" : "topic was removed";
+            sseService.emmitMetadataUpdate(topicRequest.getMediaId());
             return new ApiResponse(true, "Topic request at media: " + topicRequest.getMediaId() + ", " + msg);
         } catch (Exception e) {
             e.printStackTrace();

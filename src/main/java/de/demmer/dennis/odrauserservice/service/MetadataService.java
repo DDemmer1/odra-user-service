@@ -6,6 +6,7 @@ import de.demmer.dennis.odrauserservice.model.meta.Metadata;
 import de.demmer.dennis.odrauserservice.model.meta.tag.Flag;
 import de.demmer.dennis.odrauserservice.model.meta.tag.Star;
 import de.demmer.dennis.odrauserservice.model.meta.Topic;
+import de.demmer.dennis.odrauserservice.repository.CommentRepository;
 import de.demmer.dennis.odrauserservice.repository.MetadataRepository;
 import de.demmer.dennis.odrauserservice.repository.StarRepository;
 import de.demmer.dennis.odrauserservice.repository.TopicRepository;
@@ -30,6 +31,9 @@ public class MetadataService {
 
     @Autowired
     StarRepository starRepository;
+
+    @Autowired
+    CommentRepository commentRepository;
 
 
     public Metadata getMetaOfMedia(long mediaId){
@@ -144,5 +148,17 @@ public class MetadataService {
             result.add(topic);
         }
         return result;
+    }
+
+
+    public boolean deleteComment(long commentId, long metaId){
+        Metadata meta = metadataRepository.findById(metaId).get();
+
+        Comment toDelete = commentRepository.findById(commentId).orElse(null);
+
+
+        meta.getComments().remove(toDelete);
+        metadataRepository.save(meta);
+        return true;
     }
 }

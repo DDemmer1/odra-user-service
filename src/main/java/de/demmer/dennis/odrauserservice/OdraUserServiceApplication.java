@@ -6,12 +6,14 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 
 import javax.annotation.PostConstruct;
 import java.util.TimeZone;
 
 @SpringBootApplication
+@EnableScheduling
 @EnableZuulProxy
 @EntityScan(basePackageClasses = {
         OdraUserServiceApplication.class,
